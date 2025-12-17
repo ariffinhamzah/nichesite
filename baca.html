@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ms">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artikel - Think Quran</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* --- CSS TAMBAHAN: MEMBAIKI FORMAT ARTIKEL (PENTING!) --- */
+        /* Ini akan memaksa browser paparkan jarak perenggan & bullet point */
+        
+        #post-content {
+            color: #334155; /* Slate-700 */
+            font-size: 1.1rem; /* Saiz font sedap baca */
+            line-height: 1.8; /* Jarak antara baris */
+        }
+
+        /* 1. Jarakkan Perenggan */
+        #post-content p {
+            margin-bottom: 1.5em;
+        }
+        
+        /* 2. Cantikkan Tajuk Dalam Artikel */
+        #post-content h2 {
+            color: #4B0E86;
+            font-weight: 800;
+            font-size: 1.5rem;
+            margin-top: 2em;
+            margin-bottom: 0.7em;
+            line-height: 1.3;
+        }
+        
+        #post-content h3 {
+            color: #4B0E86;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
+        /* 3. Masukkan Balik Bullet Points & Nombor */
+        #post-content ul {
+            list-style-type: disc;
+            padding-left: 1.5em;
+            margin-bottom: 1.5em;
+        }
+        
+        #post-content ol {
+            list-style-type: decimal;
+            padding-left: 1.5em;
+            margin-bottom: 1.5em;
+        }
+        
+        #post-content li {
+            margin-bottom: 0.5em;
+        }
+
+        /* 4. Lain-lain (Quote, Gambar, Bold) */
+        #post-content blockquote {
+            border-left: 5px solid #FBD63E;
+            background-color: #FFFBEB; /* Kuning cair */
+            padding: 1em 1.5em;
+            margin: 2em 0;
+            font-style: italic;
+            border-radius: 0 8px 8px 0;
+        }
+
+        #post-content strong {
+            color: #4B0E86;
+            font-weight: 700;
+        }
+
+        #post-content img {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin: 2em 0;
+            width: 100%;
+            height: auto;
+        }
+        
+        #post-content iframe {
+            width: 100%;
+            height: 250px; /* Default mobile */
+            border-radius: 12px;
+            margin: 2em 0;
+        }
+        
+        /* Fix video untuk skrin besar */
+        @media (min-width: 640px) {
+            #post-content iframe { height: 350px; }
+        }
+    </style>
+</head>
+
+<body class="bg-[#F8F9FA] text-slate-800 pb-24">
+
+    <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-100">
+        <div class="max-w-2xl mx-auto px-4 py-4">
+            <a href="index.html" class="flex items-center text-slate-500 hover:text-[#4B0E86] font-medium transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Kembali ke Home
+            </a>
+        </div>
+    </nav>
+
+    <article class="max-w-2xl mx-auto px-4 py-8 bg-white min-h-screen shadow-sm mt-4 rounded-lg border border-gray-100">
+        <span id="post-date" class="text-xs font-bold text-[#FBD63E] uppercase tracking-wider"></span>
+        <h1 id="post-title" class="text-3xl md:text-4xl font-extrabold text-[#4B0E86] mt-2 mb-8 leading-tight"></h1>
+
+        <div
+            class="bg-gradient-to-r from-[#4B0E86] to-[#6d28d9] rounded-xl p-6 mb-10 text-white relative overflow-hidden shadow-lg">
+            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-center md:text-left">
+                    <p class="font-bold text-lg text-[#FBD63E]">Nak faham Quran cepat?</p>
+                    <p class="text-sm text-indigo-100 opacity-90">Guna teknik ThinkQuran. 15 Minit sehari je.</p>
+                </div>
+                <button onclick="goAffiliate()"
+                    class="bg-[#FBD63E] text-[#4B0E86] text-sm font-bold px-6 py-3 rounded-lg shadow hover:bg-white hover:text-[#4B0E86] transition transform hover:-translate-y-1 w-full md:w-auto">Cuba
+                    App Sekarang</button>
+            </div>
+        </div>
+
+        <div id="post-content"></div>
+
+        <div class="mt-16 pt-8 border-t border-gray-100 text-center">
+            <p class="font-bold mb-4 text-slate-600">Serius nak belajar?</p>
+            <button onclick="goAffiliate()"
+                class="w-full bg-[#FBD63E] text-[#4B0E86] font-extrabold py-4 rounded-xl shadow-lg hover:bg-yellow-400 transition text-lg border-b-4 border-yellow-600 active:border-b-0 active:translate-y-1">Daftar
+                Think Quran Percuma</button>
+        </div>
+    </article>
+
+    <div
+        class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 md:hidden shadow-[0_-5px_10px_rgba(0,0,0,0.05)] z-40">
+        <button onclick="goAffiliate()"
+            class="w-full bg-[#4B0E86] text-white font-bold py-3.5 rounded-lg shadow-md hover:bg-[#3a0b6e]">Dapatkan
+            Akses Percuma Sekarang</button>
+    </div>
+
+    <div id="admin-secret-btn" class="hidden text-center mt-4 mb-10">
+        <button onclick="editArticle()" class="text-xs text-red-600 font-bold border border-red-200 bg-red-50 px-6 py-2 rounded-full shadow-sm hover:bg-red-100 transition flex items-center justify-center mx-auto gap-2">
+            <span>🔒</span> EDIT ARTIKEL INI (ADMIN)
+        </button>
+    </div>
+
+    <script>
+        // VARIABLE GLOBAL
+        var currentArticleData = null;
+
+        // Auto-Update Script
+        var script = document.createElement('script');
+        script.src = 'db.js?v=' + new Date().getTime(); 
+
+        script.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            const currentSlug = params.get('slug');
+            
+            currentArticleData = articles.find(a => a.slug === currentSlug);
+
+            if (currentArticleData) {
+                document.title = currentArticleData.title + " - " + SITE_CONFIG.name;
+                document.getElementById('post-title').innerText = currentArticleData.title;
+                document.getElementById('post-date').innerText = currentArticleData.date;
+                document.getElementById('post-content').innerHTML = currentArticleData.content;
+            } else {
+                document.body.innerHTML = "<div class='p-10 text-center'>Artikel tak jumpa. <a href='index.html' class='text-blue-500 underline'>Balik Home</a></div>";
+            }
+        };
+
+        document.head.appendChild(script);
+
+        function goAffiliate() { 
+            if(typeof SITE_CONFIG !== 'undefined') {
+                window.open(SITE_CONFIG.affiliateLink, '_blank'); 
+            }
+        }
+
+        // Fungsi Edit (Buka New Tab)
+        function editArticle() {
+            if(!currentArticleData) {
+                alert("Artikel belum ready!");
+                return;
+            }
+            localStorage.setItem('editData', JSON.stringify(currentArticleData)); 
+            window.open('admin.html', '_blank'); 
+        }
+
+        // Check URL untuk Admin Mode
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('mode') === 'admin') {
+            document.getElementById('admin-secret-btn').classList.remove('hidden');
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <title>Sitemap - Think Quran</title>
+</head>
+<body>
+    <h1>Senarai Artikel</h1>
+    <ul id="list"></ul>
+    <script src="db.js"></script>
+    <script>
+        const domain = "https://bacalah.linkjer.my"; // TUKAR NI KEPADA DOMAIN KAU
+        const list = document.getElementById('list');
+        
+        articles.forEach(a => {
+            const link = `${domain}/baca.html?slug=${a.slug}`;
+            list.innerHTML += `<li><a href="${link}">${a.title}</a> (Last mod: ${a.date})</li>`;
+        });
+    </script>
+</body>
+</html>

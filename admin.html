@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ms">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin V9 (Align + Heading) - Celik Quran</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+
+        /* --- 1. EDITOR STYLE --- */
+        .ql-editor p { margin-bottom: 1.5em; line-height: 1.6; }
+        .ql-editor li { margin-bottom: 0.5em; }
+        .ql-editor h1 { color: #4B0E86; font-size: 2em; font-weight: 800; margin-top: 0.5em; }
+        .ql-editor h2 { color: #4B0E86; font-size: 1.5em; font-weight: 800; margin-top: 1.5em; }
+        .ql-editor h3 { color: #4B0E86; font-size: 1.2em; font-weight: 700; margin-top: 1.2em; }
+        .ql-editor strong { color: #4B0E86; }
+        .ql-video { width: 100%; height: 250px; }
+        
+        /* --- 2. SOURCE CODE EDITOR --- */
+        #html-editor {
+            display: none; width: 100%; height: 450px;
+            background-color: #1e293b; color: #4ade80;
+            font-family: 'Courier New', monospace; padding: 1rem;
+            border-radius: 0 0 0.5rem 0.5rem; font-size: 13px; line-height: 1.5;
+            border: 1px solid #cbd5e1;
+        }
+
+        /* --- 3. PREVIEW STYLE (MOBILE) --- */
+        .mobile-preview {
+            font-family: 'Inter', sans-serif; color: #334155;
+            font-size: 15px; line-height: 1.7;
+        }
+        .mobile-preview p { margin-bottom: 1.5em !important; display: block; }
+        .mobile-preview p:empty:before { content: "\00a0"; display: inline-block; } 
+        .mobile-preview ul { list-style-type: disc !important; padding-left: 1.5em !important; margin-bottom: 1.5em !important; }
+        .mobile-preview ol { list-style-type: decimal !important; padding-left: 1.5em !important; margin-bottom: 1.5em !important; }
+        .mobile-preview li { margin-bottom: 0.2em; }
+        .mobile-preview blockquote { 
+            border-left: 4px solid #FBD63E; background: #FFFBEB; 
+            padding: 0.8em 1em; margin: 1.5em 0; font-style: italic; 
+        }
+        .mobile-preview img { border-radius: 8px; margin: 1em 0; width: 100%; height: auto; }
+        .mobile-preview h1 { color: #4B0E86; font-size: 1.8rem; font-weight: 800; margin-top: 1.5em; line-height: 1.2; }
+        .mobile-preview h2 { color: #4B0E86; font-size: 1.4rem; font-weight: 800; margin-top: 1.5em; margin-bottom: 0.6em; }
+        .mobile-preview h3 { color: #4B0E86; font-size: 1.15rem; font-weight: 700; margin-top: 1.2em; margin-bottom: 0.5em; }
+
+        /* --- 4. ALIGNMENT SUPPORT (PENTING!) --- */
+        /* Quill guna class ql-align-center, kita kena define CSS dia manual untuk preview */
+        .ql-align-center { text-align: center; }
+        .ql-align-right { text-align: right; }
+        .ql-align-justify { text-align: justify; }
+
+        /* --- 5. UI LAIN --- */
+        .phone-mockup {
+            width: 320px; height: 640px; border: 12px solid #1e293b;
+            border-radius: 35px; overflow: hidden; background: #fff;
+            position: relative; margin: 0 auto;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        .phone-screen {
+            height: 100%; overflow-y: auto; padding: 20px 16px 80px 16px;
+            background-color: #F8F9FA;
+        }
+        .phone-screen::-webkit-scrollbar { width: 4px; }
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen pb-20">
+
+    <header class="bg-[#4B0E86] text-white py-3 px-6 shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-lg font-bold flex items-center gap-2">
+                Admin Panel <span class="bg-indigo-500 text-white text-[10px] px-2 py-0.5 rounded-full font-extrabold">V9 (Format Pro)</span>
+            </h1>
+            <div class="flex gap-4 text-xs items-center">
+                <span id="saveStatus" class="text-green-300 hidden transition-opacity duration-500">💾 Auto-saved</span>
+                <button onclick="window.location.reload()" class="hover:text-red-300 opacity-70">Reset</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto mt-6 px-4 flex gap-6 flex-col lg:flex-row">
+
+        <div class="flex-1 space-y-4">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                 <details>
+                    <summary class="font-bold text-gray-700 cursor-pointer text-xs uppercase tracking-wide flex items-center gap-2">
+                        📥 Import Manual
+                    </summary>
+                    <div class="mt-3 flex gap-2">
+                        <textarea id="importText" rows="1" class="w-full border border-gray-300 rounded p-2 text-xs font-mono outline-none focus:border-[#4B0E86]" placeholder="Paste object { ... } dari db.js"></textarea>
+                        <button onclick="loadFromCode()" class="bg-orange-500 text-white font-bold px-4 text-xs rounded hover:bg-orange-600 whitespace-nowrap shadow">LOAD</button>
+                    </div>
+                </details>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase">Tajuk Artikel</label>
+                        <input type="text" id="title" oninput="handleTitleChange()" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-1 focus:ring-[#4B0E86] outline-none font-bold text-lg text-[#4B0E86]">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Slug (URL)</label>
+                            <input type="text" id="slug" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-xs text-gray-500" readonly>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Tarikh</label>
+                            <input type="text" id="date" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase">Deskripsi Pendek</label>
+                        <textarea id="desc" rows="2" oninput="handleDescChange()" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-1 focus:ring-[#4B0E86] outline-none text-sm"></textarea>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-end mb-1">
+                            <label class="text-xs font-bold text-gray-500 uppercase">Isi Kandungan</label>
+                            <button onclick="toggleHtmlMode()" id="btnToggleHtml" class="text-[10px] font-mono bg-slate-100 text-slate-500 px-2 py-1 rounded border border-slate-300 hover:bg-slate-200 transition">
+                                &lt;/&gt; Edit Source
+                            </button>
+                        </div>
+                        <div id="editor-wrapper">
+                            <div id="editor-container" class="h-[450px] bg-white rounded-b-lg font-inter"></div>
+                        </div>
+                        <textarea id="html-editor" spellcheck="false" oninput="updatePreview()"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hidden lg:block w-[350px] shrink-0">
+            <div class="sticky top-20">
+                <h3 class="text-center text-[10px] font-bold text-gray-400 uppercase mb-3 tracking-widest">Mobile Preview</h3>
+                <div class="phone-mockup">
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-800 rounded-b-xl z-20"></div>
+                    <div class="phone-screen">
+                        <div class="mt-4 mb-6">
+                            <span id="preview-date" class="text-[10px] font-bold text-[#FBD63E] uppercase tracking-wider block mb-1">DATE</span>
+                            <h1 id="preview-title" class="text-2xl font-extrabold text-[#4B0E86] leading-tight">Tajuk Artikel...</h1>
+                        </div>
+                        <div id="preview-content" class="mobile-preview">
+                            <p class="text-gray-400 italic text-center mt-10">Mula menaip...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full lg:w-1/4">
+            <div class="bg-slate-800 p-5 rounded-xl shadow-lg sticky top-20 border border-slate-700">
+                <button onclick="generateJSON()" class="w-full bg-[#FBD63E] text-[#4B0E86] font-extrabold py-3 rounded-lg shadow hover:bg-yellow-400 mb-4 text-sm animate-pulse">
+                    ⚡ GENERATE CODE
+                </button>
+                <h2 class="font-bold text-white text-[10px] uppercase tracking-wider mb-2">Hasil Code (JSON)</h2>
+                <textarea id="output" class="w-full h-80 bg-slate-900 text-green-400 font-mono text-[10px] p-3 rounded border border-slate-700 focus:outline-none" readonly onclick="this.select()"></textarea>
+                <button onclick="copyToClipboard()" id="copyBtn" class="w-full mt-3 bg-white/10 text-white border border-white/20 py-2.5 rounded hover:bg-white/20 text-xs font-semibold">Copy Code</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        // --- 1. SETUP EDITOR DENGAN TOOLBAR BARU ---
+        var quill = new Quill('#editor-container', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }], // Tambah H1
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'align': [] }], // <--- INI DIA: ALIGNMENT (Kiri, Tengah, Kanan, Justify)
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['blockquote', 'code-block'],
+                    ['link', 'image', 'video'],
+                    ['clean']
+                ]
+            }
+        });
+
+        // Image URL Handler
+        var toolbar = quill.getModule('toolbar');
+        toolbar.addHandler('image', function() {
+            var url = prompt('Masukkan URL Gambar:');
+            if (url) {
+                var range = quill.getSelection();
+                quill.insertEmbed(range.index, 'image', url);
+            }
+        });
+
+        // --- 2. LOGIC EDITOR (SAMA MACAM V8) ---
+        let isHtmlMode = false;
+        
+        function toggleHtmlMode() {
+            const wrapper = document.getElementById('editor-wrapper');
+            const htmlEd = document.getElementById('html-editor');
+            const btn = document.getElementById('btnToggleHtml');
+
+            if (!isHtmlMode) {
+                htmlEd.value = quill.root.innerHTML;
+                wrapper.style.display = 'none';
+                htmlEd.style.display = 'block';
+                btn.innerText = "👁️ Visual Mode";
+                btn.className = "text-[10px] font-mono bg-blue-100 text-blue-600 px-2 py-1 rounded border border-blue-300 hover:bg-blue-200 transition";
+                isHtmlMode = true;
+            } else {
+                quill.clipboard.dangerouslyPasteHTML(htmlEd.value);
+                htmlEd.style.display = 'none';
+                wrapper.style.display = 'block';
+                btn.innerText = "</> Edit Source";
+                btn.className = "text-[10px] font-mono bg-slate-100 text-slate-500 px-2 py-1 rounded border border-slate-300 hover:bg-slate-200 transition";
+                isHtmlMode = false;
+            }
+            updatePreview();
+        }
+
+        function updatePreview() {
+            document.getElementById('preview-title').innerText = document.getElementById('title').value || "Tajuk Artikel...";
+            document.getElementById('preview-date').innerText = document.getElementById('date').value;
+            let content = isHtmlMode ? document.getElementById('html-editor').value : quill.root.innerHTML;
+            document.getElementById('preview-content').innerHTML = content;
+            saveDraft();
+        }
+        
+        quill.on('text-change', updatePreview);
+
+        function saveDraft() {
+            const draft = {
+                title: document.getElementById('title').value,
+                date: document.getElementById('date').value,
+                desc: document.getElementById('desc').value,
+                content: isHtmlMode ? document.getElementById('html-editor').value : quill.root.innerHTML
+            };
+            localStorage.setItem('adminDraft', JSON.stringify(draft));
+            const status = document.getElementById('saveStatus');
+            status.classList.remove('hidden');
+            setTimeout(() => status.classList.add('hidden'), 1000);
+        }
+
+        function loadDraft() {
+            const editData = localStorage.getItem('editData');
+            if(editData) {
+                const obj = JSON.parse(editData);
+                populateForm(obj);
+                localStorage.removeItem('editData');
+                setTimeout(() => alert("✏️ Mode Edit Aktif"), 500);
+            } else {
+                const draft = localStorage.getItem('adminDraft');
+                if(draft && !document.getElementById('title').value) {
+                    populateForm(JSON.parse(draft));
+                }
+            }
+        }
+
+        function populateForm(obj) {
+            document.getElementById('title').value = obj.title || '';
+            generateSlug();
+            document.getElementById('date').value = obj.date || new Date().toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+            document.getElementById('desc').value = obj.desc || '';
+            if (obj.content) {
+                quill.clipboard.dangerouslyPasteHTML(obj.content);
+                if(isHtmlMode) document.getElementById('html-editor').value = obj.content;
+            }
+            updatePreview();
+        }
+
+        document.getElementById('date').value = new Date().toLocaleDateString('ms-MY', { day: 'numeric', month: 'short', year: 'numeric' });
+
+        function generateSlug() {
+            const title = document.getElementById('title').value;
+            const slug = title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+            document.getElementById('slug').value = slug;
+        }
+
+        function handleTitleChange() { generateSlug(); updatePreview(); }
+        function handleDescChange() { updatePreview(); }
+
+        function loadFromCode() {
+            let input = document.getElementById('importText').value.trim();
+            if (input.endsWith(',')) input = input.slice(0, -1);
+            try {
+                const obj = Function('"use strict";return (' + input + ')')();
+                populateForm(obj);
+                alert("✅ Berjaya import!");
+            } catch (e) { alert("Error: " + e.message); }
+        }
+
+        function generateJSON() {
+            const title = document.getElementById('title').value;
+            const slug = document.getElementById('slug').value;
+            const date = document.getElementById('date').value;
+            const desc = document.getElementById('desc').value;
+            let content = isHtmlMode ? document.getElementById('html-editor').value : quill.root.innerHTML;
+            content = content.replace(/`/g, '\\`');
+            if (!title) return alert("Tajuk kosong bang!");
+            const outputString = `
+    {
+        slug: "${slug}",
+        title: "${title}",
+        desc: "${desc}",
+        date: "${date}",
+        content: \`
+${content}
+        \`
+    },`;
+            document.getElementById('output').value = outputString;
+        }
+
+        function copyToClipboard() {
+            const copyText = document.getElementById("output");
+            if (!copyText.value) return;
+            copyText.select();
+            document.execCommand("copy");
+            document.getElementById("copyBtn").innerText = "✅ Dah Copy!";
+            setTimeout(() => document.getElementById("copyBtn").innerText = "Copy Code", 2000);
+        }
+
+        window.onload = loadDraft;
+    </script>
+</body>
+</html>
