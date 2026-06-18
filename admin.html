@@ -641,20 +641,28 @@
     async function publishToGitHub(obj) {
         if (_publishing) throw new Error('Publish sedang berjalan (double-click atau tab lain). Tunggu dan cuba lagi.');
         _publishing = true;
-        const maxRetries = 2;
+        const maxRetries = 3;
         try {
-            for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+            let lastErr = null;
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
-                    return await doPublish(obj);
+                    const result = await doPublish(obj);
+                    if (!result || !result.sha) {
+                        throw new Error('GitHub response missing commit.sha — possible API change');
+                    }
+                    if (attempt > 1) showPublishStatus('pending', 'Succeeded on attempt ' + attempt + '/' + maxRetries + '!');
+                    return result;
                 } catch (e) {
-                    if (e.message.indexOf('409') !== -1 && attempt <= maxRetries) {
-                        showPublishStatus('pending', 'sha conflict detected, refetching (' + (attempt + 1) + '/' + (maxRetries + 1) + ')...');
+                    lastErr = e;
+                    if (e.message.indexOf('409') !== -1 && attempt < maxRetries) {
+                        showPublishStatus('pending', 'sha conflict (attempt ' + attempt + '), refetching (' + (attempt + 1) + '/' + maxRetries + ')...');
                         await new Promise(function(r) { setTimeout(r, 400 * attempt); });
                         continue;
                     }
                     throw e;
                 }
             }
+            throw lastErr || new Error('Publish failed: ' + maxRetries + ' attempts exhausted');
         } finally {
             _publishing = false;
         }
