@@ -3,6 +3,9 @@ module.exports = {
   content: ["./*.html"],
   theme: {
     extend: {
+      maxWidth: {
+        article: "800px"
+      },
       colors: {
         brand: {
           purple: "#4B0E86",
