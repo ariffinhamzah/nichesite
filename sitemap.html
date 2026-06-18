@@ -2,20 +2,59 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <title>Sitemap - Think Quran</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Senarai semua artikel panduan faham Al-Quran dari Think Quran Fan.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://bacalah.linkjer.my/sitemap.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
+    <link rel="stylesheet" href="dist/tailwind.min.css" integrity="sha384-B3je6fPUlU+6SNSShUSI986ba9SeKmykdfsDopCB6lEEj8ilwX29P0mYN1Bqr81o" crossorigin="anonymous">
+    <link rel="stylesheet" href="dist/site.css">
+    <title>Senarai Artikel - Think Quran</title>
+    <noscript><style>body{font-family:Inter,sans-serif;padding:2rem;}</style></noscript>
 </head>
-<body>
-    <h1>Senarai Artikel</h1>
-    <ul id="list"></ul>
-    <script src="db.js"></script>
+<body class="bg-brand-surface text-slate-800">
+    <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-100">
+        <div class="max-w-2xl mx-auto px-4 py-4">
+            <a href="index.html" class="flex items-center text-slate-500 hover:text-brand-purple font-medium transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Kembali ke Home
+            </a>
+        </div>
+    </nav>
+
+    <main class="max-w-2xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-extrabold text-brand-purple mb-6">Senarai Artikel</h1>
+        <ul id="list" class="space-y-2 bg-white rounded-lg p-6 shadow-sm border border-gray-100"></ul>
+    </main>
+
     <script>
-        const domain = "https://bacalah.linkjer.my"; // TUKAR NI KEPADA DOMAIN KAU
-        const list = document.getElementById('list');
-        
-        articles.forEach(a => {
-            const link = `${domain}/baca.html?slug=${a.slug}`;
-            list.innerHTML += `<li><a href="${link}">${a.title}</a> (Last mod: ${a.date})</li>`;
-        });
+        const script = document.createElement('script');
+        script.src = 'db.js?v=' + new Date().getTime();
+        script.onload = renderSitemap;
+        script.onerror = () => { document.getElementById('list').innerHTML = '<li class="text-slate-500">Senarai artikel tidak dapat dimuatkan.</li>'; };
+        document.head.appendChild(script);
+
+        const escapeHTML = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        function renderSitemap() {
+            const list = document.getElementById('list');
+            if (!Array.isArray(articles) || articles.length === 0) {
+                list.innerHTML = '<li class="text-slate-500">Tiada artikel.</li>';
+                return;
+            }
+            const domain = (typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG.domain) || window.location.origin;
+            const sorted = articles.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            list.innerHTML = sorted.map(a => {
+                const safeSlug = encodeURIComponent(a.slug || '');
+                const title = escapeHTML(a.title || '');
+                const date = escapeHTML(a.date || '');
+                return `<li class="border-b border-gray-100 pb-2"><a href="${domain}/baca.html?slug=${safeSlug}" class="text-brand-purple hover:text-brand-purple-light font-medium">${title}</a> <span class="text-xs text-slate-500">(${date})</span></li>`;
+            }).join('');
+        }
     </script>
 </body>
 </html>

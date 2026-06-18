@@ -346,7 +346,7 @@ const articles = [
         content: `
             <p class="mb-4">Ramai orang tanya, "Lepas dah hafal vocab asas, nak buat apa?". Haa, masa ni lah kita masuk fasa <strong>Surah Quest</strong>.</p>
             
-            <center><img src="https://thinkquran.com/img/mainpage_v2/surah_quest/phase/img_2_1.png" alt="Surah Quest Interface" class=" shadow-md my-6 border border-gray-200"></center>
+            <div class="text-center"><img src="https://thinkquran.com/img/mainpage_v2/surah_quest/phase/img_2_1.png" alt="Surah Quest Interface" class=" shadow-md my-6 border border-gray-200 mx-auto"></div>
 
             <h3 class="text-xl font-bold mt-6 mb-2">Belajar Ikut Surah Kegemaran</h3>
             <p class="mb-4">Dalam mode ini, korang boleh pilih nak fokus surah apa. Contohnya:</p>
