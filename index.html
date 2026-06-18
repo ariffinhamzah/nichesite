@@ -14,7 +14,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Belajar Faham Al-Quran - Cara Mudah & Cepat">
     <meta name="twitter:description" content="Fokus pada 900 perkataan paling kerap berulang. Teknik terbukti berkesan.">
-    <link rel="canonical" href="https://bacalah.linkjer.my/">
+    <link rel="canonical" href="/">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -71,12 +71,13 @@
     </main>
 
     <footer class="bg-slate-900 text-slate-400 py-10 text-center text-sm">
-        <p class="mb-2">&copy; <span id="year"></span> bacalah.linkjer.my</p>
+        <p class="mb-2">&copy; <span id="year"></span> <span id="domain"></span></p>
         <p class="text-xs text-slate-600">Site ini adalah inisiatif affiliate.</p>
     </footer>
 
   <script>
         document.getElementById('year').textContent = new Date().getFullYear();
+        document.getElementById('domain').textContent = window.location.hostname;
 
         const script = document.createElement('script');
         script.src = 'db.js?v=' + new Date().getTime();

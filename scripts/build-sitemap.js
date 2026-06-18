@@ -7,7 +7,7 @@ const match = dbContent.match(/const articles = (\[[\s\S]*?\]);/);
 if (!match) { console.error('No articles found in db.js'); process.exit(1); }
 const articles = eval(match[1]);
 
-const domain = process.env.SITE_DOMAIN || 'https://bacalah.linkjer.my';
+const domain = process.env.SITE_DOMAIN || 'https://thinkquran.inovasisaya.my';
 
 const months = { 'Jan':1,'Feb':2,'Mac':3,'Apr':4,'Mei':5,'Jun':6,'Jul':7,'Ogos':8,'Sep':9,'Okt':10,'Nov':11,'Dis':12 };
 const parseDate = (d) => {
