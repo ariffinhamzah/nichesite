@@ -12,29 +12,28 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* === Article body (used on baca.html #post-content + admin.html .mobile-preview) === */
-.article-body {
+/* === Article body (baca.html #post-content + admin.html .mobile-preview) === */
+.article-body, .mobile-preview {
   color: var(--brand-text);
-  font-size: 1.1rem;
   line-height: 1.8;
 }
 
-.article-body p { margin-bottom: 1.5em; display: block; }
-.article-body p:empty::before { content: "\00a0"; display: inline-block; }
+.article-body p, .mobile-preview p { margin-bottom: 1.5em; display: block; }
+.article-body p:empty::before, .mobile-preview p:empty::before { content: "\00a0"; display: inline-block; }
 
-.article-body h1 { color: var(--brand-purple); font-size: 1.8rem; font-weight: 800; margin-top: 1.5em; line-height: 1.2; }
-.article-body h2 { color: var(--brand-purple); font-size: 1.5rem; font-weight: 800; margin-top: 2em; margin-bottom: 0.7em; line-height: 1.3; }
-.article-body h3 { color: var(--brand-purple); font-size: 1.25rem; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
+.article-body h1, .mobile-preview h1 { color: var(--brand-purple); font-size: 1.8rem; font-weight: 800; margin-top: 1.5em; line-height: 1.2; }
+.article-body h2, .mobile-preview h2 { color: var(--brand-purple); font-size: 1.5rem; font-weight: 800; margin-top: 2em; margin-bottom: 0.7em; line-height: 1.3; }
+.article-body h3, .mobile-preview h3 { color: var(--brand-purple); font-size: 1.25rem; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
 
-.article-body ul, .article-body ol { padding-left: 1.5em; margin-bottom: 1.5em; }
-.article-body ul { list-style-type: disc; }
-.article-body ol { list-style-type: decimal; }
-.article-body li { margin-bottom: 0.5em; }
+.article-body ul, .article-body ol, .mobile-preview ul, .mobile-preview ol { padding-left: 1.5em; margin-bottom: 1.5em; }
+.article-body ul, .mobile-preview ul { list-style-type: disc; }
+.article-body ol, .mobile-preview ol { list-style-type: decimal; }
+.article-body li, .mobile-preview li { margin-bottom: 0.5em; }
 
-.article-body strong { color: var(--brand-purple); font-weight: 700; }
-.article-body em { font-style: italic; }
+.article-body strong, .mobile-preview strong { color: var(--brand-purple); font-weight: 700; }
+.article-body em, .mobile-preview em { font-style: italic; }
 
-.article-body blockquote {
+.article-body blockquote, .mobile-preview blockquote {
   border-left: 5px solid var(--brand-yellow);
   background-color: var(--brand-yellow-soft);
   padding: 1em 1.5em;
@@ -43,7 +42,7 @@ body {
   border-radius: 0 8px 8px 0;
 }
 
-.article-body img {
+.article-body img, .mobile-preview img {
   display: block;
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -52,7 +51,7 @@ body {
   height: auto;
 }
 
-.article-body iframe {
+.article-body iframe, .mobile-preview iframe {
   width: 100%;
   height: 250px;
   border-radius: 12px;
@@ -60,15 +59,15 @@ body {
   margin: 2em 0;
 }
 
-.article-body .ql-align-center { text-align: center; }
-.article-body .ql-align-right { text-align: right; }
-.article-body .ql-align-justify { text-align: justify; }
+.article-body .ql-align-center, .mobile-preview .ql-align-center { text-align: center; }
+.article-body .ql-align-right, .mobile-preview .ql-align-right { text-align: right; }
+.article-body .ql-align-justify, .mobile-preview .ql-align-justify { text-align: justify; }
 
 @media (min-width: 640px) {
-  .article-body iframe { height: 350px; }
+  .article-body iframe, .mobile-preview iframe { height: 350px; }
 }
 
-/* === Mobile preview in admin (uses .article-body) === */
+/* === Mobile preview in admin (size override) === */
 .mobile-preview {
   font-size: 15px;
   line-height: 1.7;
