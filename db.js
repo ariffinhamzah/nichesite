@@ -375,8 +375,8 @@ const articles = [
         `
     },
 {
-    slug: "test-updated",
-    title: "[TEST] UPDATED",
+    slug: "test-updated-selalu",
+    title: "[TEST] UPDATED SELALU",
     desc: "Artikel test untuk verify flow admin → GitHub → Cloudflare. Akan dibuang selepas verify.",
     date: "18 Jun 2026",
     content: `<p>Ini artikel test. Kalau korang nampak ni di site, auto-publish berfungsi end-to-end.</p><p>Lepas verify, admin boleh publish dengan satu klik. Cloudflare deploy dalam ~30s.</p>`
