@@ -1,0 +1,136 @@
+:root {
+  --brand-purple: #4B0E86;
+  --brand-purple-dark: #3a0b6e;
+  --brand-purple-light: #8B07F4;
+  --brand-yellow: #FBD63E;
+  --brand-surface: #F8F9FA;
+  --brand-text: #334155;
+  --brand-yellow-soft: #FFFBEB;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* === Article body (used on baca.html #post-content + admin.html .mobile-preview) === */
+.article-body {
+  color: var(--brand-text);
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.article-body p { margin-bottom: 1.5em; display: block; }
+.article-body p:empty::before { content: "\00a0"; display: inline-block; }
+
+.article-body h1 { color: var(--brand-purple); font-size: 1.8rem; font-weight: 800; margin-top: 1.5em; line-height: 1.2; }
+.article-body h2 { color: var(--brand-purple); font-size: 1.5rem; font-weight: 800; margin-top: 2em; margin-bottom: 0.7em; line-height: 1.3; }
+.article-body h3 { color: var(--brand-purple); font-size: 1.25rem; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
+
+.article-body ul, .article-body ol { padding-left: 1.5em; margin-bottom: 1.5em; }
+.article-body ul { list-style-type: disc; }
+.article-body ol { list-style-type: decimal; }
+.article-body li { margin-bottom: 0.5em; }
+
+.article-body strong { color: var(--brand-purple); font-weight: 700; }
+.article-body em { font-style: italic; }
+
+.article-body blockquote {
+  border-left: 5px solid var(--brand-yellow);
+  background-color: var(--brand-yellow-soft);
+  padding: 1em 1.5em;
+  margin: 2em 0;
+  font-style: italic;
+  border-radius: 0 8px 8px 0;
+}
+
+.article-body img {
+  display: block;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin: 2em auto;
+  max-width: 100%;
+  height: auto;
+}
+
+.article-body iframe {
+  width: 100%;
+  height: 250px;
+  border-radius: 12px;
+  border: 0;
+  margin: 2em 0;
+}
+
+.article-body .ql-align-center { text-align: center; }
+.article-body .ql-align-right { text-align: right; }
+.article-body .ql-align-justify { text-align: justify; }
+
+@media (min-width: 640px) {
+  .article-body iframe { height: 350px; }
+}
+
+/* === Mobile preview in admin (uses .article-body) === */
+.mobile-preview {
+  font-size: 15px;
+  line-height: 1.7;
+  padding: 20px 16px;
+  background-color: var(--brand-surface);
+}
+
+/* === Admin: Quill editor styles === */
+.ql-editor p { margin-bottom: 1.5em; line-height: 1.6; }
+.ql-editor li { margin-bottom: 0.5em; }
+.ql-editor h1 { color: var(--brand-purple); font-size: 2em; font-weight: 800; margin-top: 0.5em; }
+.ql-editor h2 { color: var(--brand-purple); font-size: 1.5em; font-weight: 800; margin-top: 1.5em; }
+.ql-editor h3 { color: var(--brand-purple); font-size: 1.2em; font-weight: 700; margin-top: 1.2em; }
+.ql-editor strong { color: var(--brand-purple); }
+.ql-video { width: 100%; height: 250px; }
+
+/* === Admin: HTML source editor === */
+#html-editor {
+  display: none;
+  width: 100%;
+  height: 450px;
+  background-color: #1e293b;
+  color: #4ade80;
+  font-family: 'Courier New', monospace;
+  padding: 1rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid #cbd5e1;
+}
+
+/* === Admin: Phone mockup (preview frame) === */
+.phone-mockup {
+  width: 320px;
+  height: 640px;
+  border: 12px solid #1e293b;
+  border-radius: 35px;
+  overflow: hidden;
+  background: #fff;
+  position: relative;
+  margin: 0 auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.phone-screen {
+  height: 100%;
+  overflow-y: auto;
+  padding: 0 0 80px 0;
+  background-color: var(--brand-surface);
+}
+
+.phone-screen::-webkit-scrollbar { width: 4px; }
+
+/* === Utility: line clamp via Tailwind plugin (line-clamp-2) === */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* === Utility: arabesque background === */
+.bg-arabesque {
+  background-image: url('https://www.transparenttextures.com/patterns/arabesque.png');
+}
