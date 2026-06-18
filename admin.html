@@ -33,10 +33,36 @@
                     <option value="">+ New Article</option>
                 </select>
                 <span id="saveStatus" class="text-green-300 hidden transition-opacity duration-500">💾 Saved</span>
+                <button onclick="openSettings()" class="hover:text-yellow-300 opacity-70" aria-label="Settings" title="GitHub Settings">⚙️</button>
                 <button onclick="confirmReset()" class="hover:text-red-300 opacity-70" aria-label="Reset form">Reset</button>
             </div>
         </div>
     </header>
+
+    <div id="settingsModal" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="settingsTitle" class="text-lg font-bold text-brand-purple">GitHub Settings</h2>
+                <button onclick="closeSettings()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none" aria-label="Close">×</button>
+            </div>
+            <p class="text-xs text-gray-600 mb-3">
+                Personal Access Token (PAT) untuk auto-publish. Token disimpan dalam localStorage browser ni. Halaman admin dilindungi Cloudflare Access.
+            </p>
+            <div class="mb-3">
+                <label for="patInput" class="text-xs font-bold text-gray-500 uppercase">Personal Access Token</label>
+                <input type="password" id="patInput" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono mt-1" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+            </div>
+            <div class="mb-4 text-xs">
+                <a href="https://github.com/settings/tokens/new?scopes=repo&description=nichesite-admin" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">→ Create new token (pilih scope: <code class="bg-gray-100 px-1 rounded">repo</code>)</a>
+            </div>
+            <div id="settingsStatus" class="mb-4 text-xs min-h-[1.25rem]" aria-live="polite"></div>
+            <div class="flex gap-2">
+                <button onclick="savePAT()" class="flex-1 bg-brand-purple text-white font-bold py-2 rounded-lg text-sm hover:opacity-90">Save</button>
+                <button onclick="testPAT()" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg text-sm hover:bg-blue-600">Test</button>
+                <button onclick="clearPATFn()" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg text-sm hover:bg-red-600">Clear</button>
+            </div>
+        </div>
+    </div>
 
     <main class="max-w-7xl mx-auto mt-6 px-4 flex gap-6 flex-col lg:flex-row">
 
@@ -121,8 +147,12 @@
                 </button>
                 <h2 class="font-bold text-white text-[10px] uppercase tracking-wider mb-2">Hasil Code (JSON)</h2>
                 <textarea id="output" class="w-full h-80 bg-slate-900 text-green-400 font-mono text-[10px] p-3 rounded border border-slate-700 focus:outline-none" readonly onclick="this.select()"></textarea>
+                <div id="publishStatus" class="hidden mt-4 p-3 rounded border text-[10px] font-mono" aria-live="polite">
+                    <div class="font-bold mb-1">GitHub Publish:</div>
+                    <div id="publishStatusText"></div>
+                </div>
                 <div id="publishSteps" class="hidden mt-4 p-3 bg-slate-900 rounded border border-green-700 text-green-300 text-[10px] font-mono">
-                    <div class="font-bold text-green-400 mb-1">Next steps:</div>
+                    <div class="font-bold text-green-400 mb-1">Manual fallback:</div>
                     <div>1. Open <code class="text-yellow-300">db.js</code></div>
                     <div>2. Paste code (insert or replace by slug)</div>
                     <div>3. Save & commit:</div>
@@ -148,6 +178,7 @@
     let isHtmlMode = false;
     let allArticles = [];
     let editMode = 'new';
+    let originalSlug = null;
     let lastSaved = 0;
     let lastSavedDraft = '';
     let hasUnsavedChanges = false;
@@ -338,6 +369,7 @@
             if (isHtmlMode) document.getElementById('html-editor').value = clean;
         }
         if (obj.slug) document.getElementById('articleSelect').value = obj.slug;
+        originalSlug = obj.slug || null;
         updatePreview();
         saveDraft();
     }
@@ -350,6 +382,7 @@
         quill.setText('');
         if (isHtmlMode) document.getElementById('html-editor').value = '';
         editMode = 'new';
+        originalSlug = null;
         setModeBadge();
         document.getElementById('articleSelect').value = '';
         updatePreview();
@@ -392,8 +425,10 @@
         try {
             const obj = JSON.parse(input);
             if (!obj || typeof obj !== 'object') throw new Error('Input bukan object JSON yang sah');
-            editMode = allArticles.find(a => a.slug === obj.slug) ? 'edit' : 'new';
+            const existing = allArticles.find(a => a.slug === obj.slug);
+            editMode = existing ? 'edit' : 'new';
             setModeBadge();
+            originalSlug = existing ? obj.slug : null;
             populateForm(obj);
             alert('Berjaya import!');
         } catch (e) { alert('Error: ' + e.message); }
@@ -416,11 +451,44 @@
         const outputString = '    ' + JSON.stringify(obj, null, 4).replace(/\n/g, '\n    ') + ',';
         document.getElementById('output').value = outputString;
         copyToClipboard(outputString);
-        document.getElementById('publishSteps').classList.remove('hidden');
+        document.getElementById('publishSteps').classList.add('hidden');
         const btn = document.getElementById('generateBtn');
-        btn.textContent = 'Copied! Generate lagi?';
-        clearTimeout(generateAndCopy._t);
-        generateAndCopy._t = setTimeout(() => { btn.textContent = 'Generate & Copy Code'; }, 2000);
+        if (hasPAT()) {
+            if (originalSlug && originalSlug !== slug) {
+                if (!confirm('Slug berubah dari "' + originalSlug + '" ke "' + slug + '".\n\nArtikel akan di-rename in place. URL lama akan 404 (kecuali ada redirect).\n\nTeruskan?')) return;
+            }
+            btn.textContent = 'Publishing...';
+            btn.disabled = true;
+            btn.classList.remove('animate-pulse');
+            showPublishStatus('pending', 'Committing to GitHub (' + (originalSlug ? 'update' : 'new') + ')...');
+            publishToGitHub(obj)
+                .then(function(commit) {
+                    btn.textContent = '\u2705 Published!';
+                    btn.className = 'w-full bg-green-500 text-white font-extrabold py-3 rounded-lg shadow mb-4 text-sm';
+                    showPublishStatus('success', 'Commit ' + commit.sha.substring(0,7) + ': "' + commit.commit.message + '"\n\u2192 Cloudflare deploying in ~30s\n\u2192 Live at: ' + window.location.origin + '/baca.html?slug=' + obj.slug);
+                    originalSlug = obj.slug;
+                    editMode = 'edit';
+                    setModeBadge();
+                    loadArticleList();
+                })
+                .catch(function(err) {
+                    btn.textContent = '\u274C Publish failed';
+                    btn.className = 'w-full bg-red-500 text-white font-extrabold py-3 rounded-lg shadow mb-4 text-sm';
+                    showPublishStatus('error', 'GitHub: ' + err.message + '\n\nJSON copied \u2014 boleh paste manual di db.js.');
+                    document.getElementById('publishSteps').classList.remove('hidden');
+                })
+                .finally(function() {
+                    btn.disabled = false;
+                    clearTimeout(generateAndCopy._t);
+                    generateAndCopy._t = setTimeout(resetGenerateButton, 5000);
+                });
+        } else {
+            btn.textContent = 'Copied! Generate lagi?';
+            document.getElementById('publishSteps').classList.remove('hidden');
+            showPublishStatus('info', 'PAT not set. JSON copied \u2014 paste manual di db.js, atau set PAT dalam \u2699 Settings.');
+            clearTimeout(generateAndCopy._t);
+            generateAndCopy._t = setTimeout(resetGenerateButton, 2000);
+        }
     }
 
     function copyToClipboard(text) {
@@ -461,13 +529,16 @@
                 if (draft) {
                     try {
                         const obj = JSON.parse(draft);
-                        editMode = allArticles.find(a => a.slug === obj.slug) ? 'edit' : 'new';
+                        const existing = allArticles.find(a => a.slug === obj.slug);
+                        editMode = existing ? 'edit' : 'new';
+                        originalSlug = existing ? obj.slug : null;
                         setModeBadge();
                         populateForm(obj);
                     } catch (e) { localStorage.removeItem('adminDraft'); }
                 }
             }
         } catch (e) { console.error('loadDraft failed:', e); }
+        resetGenerateButton();
         document.getElementById('title').addEventListener('input', () => hasUnsavedChanges = true);
         document.getElementById('date').addEventListener('input', () => hasUnsavedChanges = true);
         document.getElementById('desc').addEventListener('input', () => hasUnsavedChanges = true);
@@ -482,6 +553,249 @@
         clearTimeout(previewTimer);
         previewTimer = setTimeout(() => { updatePreview(); saveDraft(); }, 300);
     });
+
+    function resetGenerateButton() {
+        const btn = document.getElementById('generateBtn');
+        if (hasPAT()) {
+            btn.textContent = 'Generate & Publish';
+            btn.className = 'w-full bg-green-500 text-white font-extrabold py-3 rounded-lg shadow hover:bg-green-600 mb-4 text-sm animate-pulse';
+        } else {
+            btn.textContent = 'Generate & Copy Code';
+            btn.className = 'w-full bg-brand-yellow text-brand-purple font-extrabold py-3 rounded-lg shadow hover:bg-yellow-400 mb-4 text-sm animate-pulse';
+        }
+    }
+
+    function showPublishStatus(type, msg) {
+        const el = document.getElementById('publishStatus');
+        const text = document.getElementById('publishStatusText');
+        el.classList.remove('hidden');
+        if (type === 'success') {
+            el.className = 'mt-4 p-3 rounded border border-green-700 bg-green-900/30 text-green-300 text-[10px] font-mono whitespace-pre-wrap';
+        } else if (type === 'error') {
+            el.className = 'mt-4 p-3 rounded border border-red-700 bg-red-900/30 text-red-300 text-[10px] font-mono whitespace-pre-wrap';
+        } else if (type === 'pending') {
+            el.className = 'mt-4 p-3 rounded border border-yellow-700 bg-yellow-900/30 text-yellow-300 text-[10px] font-mono whitespace-pre-wrap';
+        } else {
+            el.className = 'mt-4 p-3 rounded border border-slate-700 bg-slate-900 text-yellow-300 text-[10px] font-mono whitespace-pre-wrap';
+        }
+        text.textContent = msg;
+        if (type === 'success' || type === 'info') {
+            clearTimeout(showPublishStatus._t);
+            showPublishStatus._t = setTimeout(() => el.classList.add('hidden'), 12000);
+        }
+    }
+
+    const GITHUB_REPO = 'ariffinhamzah/nichesite';
+    const GITHUB_BRANCH = 'main';
+    const GITHUB_API = 'https://api.github.com';
+    const PAT_KEY = 'github_pat';
+
+    function hasPAT() { try { return !!localStorage.getItem(PAT_KEY); } catch (e) { return false; } }
+    function getPAT() { try { return localStorage.getItem(PAT_KEY); } catch (e) { return null; } }
+    function setPAT(pat) { try { localStorage.setItem(PAT_KEY, pat); } catch (e) { alert('Gagal simpan PAT: ' + e.message); } }
+
+    function openSettings() {
+        document.getElementById('patInput').value = getPAT() || '';
+        document.getElementById('settingsStatus').innerHTML = '';
+        document.getElementById('settingsModal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('patInput').focus(), 100);
+    }
+    function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
+    function savePAT() {
+        const pat = document.getElementById('patInput').value.trim();
+        if (!pat) { alert('Token kosong!'); return; }
+        if (!pat.startsWith('ghp_') && !pat.startsWith('github_pat_') && !pat.startsWith('ghs_')) {
+            if (!confirm('Token ni tak nampak macam PAT standard (pat guna ghp_/github_pat_/ghs_). Simpan jugak?')) return;
+        }
+        setPAT(pat);
+        document.getElementById('settingsStatus').innerHTML = '<span class="text-green-600 font-bold">\u2705 Saved. Klik Test untuk verify connection.</span>';
+        resetGenerateButton();
+    }
+    function clearPATFn() {
+        if (!confirm('Buang token dari browser ni?')) return;
+        try { localStorage.removeItem(PAT_KEY); } catch (e) {}
+        document.getElementById('patInput').value = '';
+        document.getElementById('settingsStatus').innerHTML = '<span class="text-gray-600">Token dibuang.</span>';
+        resetGenerateButton();
+    }
+    async function testPAT() {
+        const pat = getPAT();
+        if (!pat) { document.getElementById('settingsStatus').innerHTML = '<span class="text-red-600">Tiada token. Save dulu.</span>'; return; }
+        document.getElementById('settingsStatus').innerHTML = '<span class="text-blue-600">Testing...</span>';
+        try {
+            const r = await fetch(GITHUB_API + '/user', { headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github+json' } });
+            if (r.status === 401) throw new Error('Invalid token (401)');
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const user = await r.json();
+            const repoResp = await fetch(GITHUB_API + '/repos/' + GITHUB_REPO, { headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github+json' } });
+            if (!repoResp.ok) throw new Error('Repo access: HTTP ' + repoResp.status);
+            const repo = await repoResp.json();
+            document.getElementById('settingsStatus').innerHTML = '<span class="text-green-600 font-bold">\u2705 Connected as ' + user.login + '. Repo "' + repo.full_name + '" accessible (push: ' + (repo.permissions && repo.permissions.push) + ').</span>';
+        } catch (e) {
+            document.getElementById('settingsStatus').innerHTML = '<span class="text-red-600 font-bold">\u274C ' + e.message + '</span>';
+        }
+    }
+
+    async function publishToGitHub(obj) {
+        const pat = getPAT();
+        if (!pat) throw new Error('PAT not set');
+        const getResp = await fetch(GITHUB_API + '/repos/' + GITHUB_REPO + '/contents/db.js?ref=' + GITHUB_BRANCH, {
+            headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github+json' }
+        });
+        if (!getResp.ok) {
+            const e = await getResp.json().catch(() => ({}));
+            throw new Error('GET db.js failed: ' + getResp.status + ' ' + (e.message || ''));
+        }
+        const file = await getResp.json();
+        const original = b64DecodeUTF8(file.content);
+        const lookupSlug = originalSlug || obj.slug;
+        const range = findArticleRange(original, lookupSlug);
+        const serialized = serializeArticle(obj);
+        let updated, action;
+        if (range) {
+            updated = original.slice(0, range.open) + serialized + original.slice(range.close + 1);
+            action = 'Update';
+        } else {
+            const ins = findInsertPoint(original);
+            updated = original.slice(0, ins.lastBrace + 1) + (ins.needsComma ? ',' : '') + '\n' + serialized + ',' + original.slice(ins.lastBrace + 1);
+            action = 'Add';
+        }
+        const putResp = await fetch(GITHUB_API + '/repos/' + GITHUB_REPO + '/contents/db.js', {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + pat,
+                'Accept': 'application/vnd.github+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: action + ' article: ' + obj.title,
+                content: b64EncodeUTF8(updated),
+                sha: file.sha,
+                branch: GITHUB_BRANCH
+            })
+        });
+        const body = await putResp.json().catch(() => ({}));
+        if (putResp.status === 401) throw new Error('Invalid PAT (401). Update token dalam Settings.');
+        if (putResp.status === 409) throw new Error('Conflict (409): db.js berubah di server. Refresh dan try again.');
+        if (putResp.status === 422) throw new Error('Unprocessable (422): ' + (body.message || 'check content'));
+        if (!putResp.ok) throw new Error('HTTP ' + putResp.status + ': ' + (body.message || 'unknown'));
+        return body.commit;
+    }
+
+    function b64DecodeUTF8(b64) {
+        const bin = atob(b64.replace(/\n/g, ''));
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return new TextDecoder('utf-8').decode(bytes);
+    }
+    function b64EncodeUTF8(str) {
+        const bytes = new TextEncoder().encode(str);
+        let bin = '';
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+    }
+    function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+    function findArticleRange(content, slug) {
+        const m = content.match(new RegExp('slug:\\s*"' + escapeRegex(slug) + '"'));
+        if (!m) return null;
+        const slugIdx = m.index;
+        let i = slugIdx - 1;
+        while (i >= 0) {
+            const c = content[i];
+            if (c === '{') return walkForwardToMatch(content, i);
+            if (c === '}') return null;
+            i--;
+        }
+        return null;
+    }
+    function walkForwardToMatch(content, openIdx) {
+        let depth = 1;
+        let i = openIdx + 1;
+        const n = content.length;
+        while (i < n) {
+            const c = content[i];
+            if (c === '"' || c === "'") { i = skipString(content, i, c); continue; }
+            if (c === '`') { i = skipTemplateLiteral(content, i); continue; }
+            if (c === '/' && content[i+1] === '/') {
+                i = content.indexOf('\n', i);
+                if (i === -1) return null;
+                continue;
+            }
+            if (c === '/' && content[i+1] === '*') {
+                const end = content.indexOf('*/', i + 2);
+                if (end === -1) return null;
+                i = end + 2;
+                continue;
+            }
+            if (c === '{') depth++;
+            else if (c === '}') { depth--; if (depth === 0) return { open: openIdx, close: i }; }
+            i++;
+        }
+        return null;
+    }
+    function skipString(content, start, quote) {
+        let i = start + 1;
+        while (i < content.length) {
+            if (content[i] === '\\') { i += 2; continue; }
+            if (content[i] === quote) return i + 1;
+            if (content[i] === '\n') return i + 1;
+            i++;
+        }
+        return i;
+    }
+    function skipTemplateLiteral(content, start) {
+        let i = start + 1;
+        while (i < content.length) {
+            if (content[i] === '\\') { i += 2; continue; }
+            if (content[i] === '`') return i + 1;
+            i++;
+        }
+        return i;
+    }
+    function findInsertPoint(content) {
+        const m = content.match(/\n(\s*)\];\s*$/);
+        if (!m) throw new Error('Articles array end (];) not found');
+        const insertPos = m.index;
+        const before = content.slice(0, insertPos);
+        const lastBrace = before.lastIndexOf('}');
+        if (lastBrace === -1) throw new Error('No article found before ];');
+        const afterLastBrace = before.slice(lastBrace + 1);
+        const needsComma = !afterLastBrace.includes(',');
+        return { insertPos, lastBrace, needsComma };
+    }
+    function serializeArticle(obj) {
+        const pad = '    ';
+        const lines = ['{'];
+        const keys = Object.keys(obj);
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            const sep = i < keys.length - 1 ? ',' : '';
+            lines.push(pad + key + ': ' + formatValue(key, obj[key]) + sep);
+        }
+        lines.push('}');
+        return lines.join('\n');
+    }
+    function formatValue(key, value) {
+        if (typeof value === 'string') {
+            if (key === 'content') return formatTemplateLiteral(value);
+            return formatStringLiteral(value);
+        }
+        return JSON.stringify(value);
+    }
+    function formatStringLiteral(str) {
+        return '"' + str
+            .replace(/\\/g, '\\\\')
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t') + '"';
+    }
+    function formatTemplateLiteral(str) {
+        return '`' + str
+            .replace(/\\/g, '\\\\')
+            .replace(/`/g, '\\`')
+            .replace(/\$\{/g, '\\${') + '`';
+    }
     </script>
 </body>
 </html>
