@@ -18,32 +18,24 @@ Projek ini adalah laman web statik yang direka untuk mempromosikan aplikasi "Thi
 
 ## Cara Menambah/Mengedit Artikel
 
-Sistem ini tidak mempunyai *backend* (server-side). Segala data disimpan dalam fail `db.js`.
+Dua cara: **(A) Auto-publish dari admin** (recommended, perlu GitHub PAT) atau **(B) Manual edit db.js**.
 
-### Langkah 1: Buka Panel Admin
-Buka fail `admin.html` di pelayar web anda (Chrome/Edge/Firefox).
+### Cara A: Auto-Publish dari Admin (Recommended)
 
-### Langkah 2: Tulis Artikel
-1.  Masukkan **Tajuk Artikel**.
-2.  **Slug** akan dijana secara automatik (boleh diedit jika perlu).
-3.  Masukkan **Tarikh**.
-4.  Tulis **Deskripsi Pendek** (untuk paparan di `index.html`).
-5.  Tulis isi kandungan di dalam editor. Anda boleh masukkan gambar (URL), *bold*, *italic*, dan *header*.
+1.  Buka `https://thinkquran.inovasisaya.my/admin.html` (login via Cloudflare Access).
+2.  Setup PAT (one-time): klik ⚙️ → paste GitHub PAT dengan scope `repo` → Save → Test.
+3.  Tulis artikel dalam Quill editor.
+4.  Klik **Generate & Publish** → auto-commit ke `develop` branch.
+5.  Verify di Cloudflare preview URL (~30s).
+6.  Merge `develop` → `main` bila ready untuk release ke production.
 
-### Langkah 3: Jana Kod (Generate Code)
-1.  Klik butang **⚡ GENERATE CODE**.
-2.  Satu blok kod JSON akan muncul di bahagian kanan (atau bawah pada peranti mobile).
-3.  Klik **Copy Code**.
+### Cara B: Manual (Tanpa PAT)
 
-### Langkah 4: Kemaskini `db.js`
-1.  Buka fail `db.js` menggunakan *text editor* (VS Code / Notepad).
-2.  Cari bahagian `const articles = [ ... ];`.
-3.  Tampal (*Paste*) kod yang disalin tadi ke dalam array `articles`. 
-    *   **Nota PENTING**: Pastikan anda menampal kod tersebut di dalam kurungan siku `[]`. Jika menggabungkan dengan artikel sedia ada, pastikan ada tanda koma (`,`) antara objek artikel.
-4.  Simpan fail `db.js`.
-
-### Langkah 5: Semak Website
-Buka `index.html` dan *refresh*. Artikel baru sepatutnya muncul di senarai.
+1.  Buka `admin.html` di pelayar.
+2.  Tulis artikel, klik **Generate & Copy Code**.
+3.  JSON akan di-copy. Paste ke dalam array `articles` dalam `db.js`.
+4.  Commit + push ke `main` (production) atau `develop` (staging dulu).
+5.  Cloudflare auto-deploy.
 
 ## Konfigurasi Affiliate
 
@@ -139,10 +131,46 @@ SITE_DOMAIN=https://example.com npm run build:sitemap
 
 ## Deployment
 
-Projek ini di-deploy di **Cloudflare Pages**. Build command di Cloudflare dashboard:
+Projek ini di-deploy di **Cloudflare Pages** dengan **Git Flow branching model**.
 
-*   **Build command:** `npm run build`
+### Branch Structure
+
+*   **`main`** = **Production**. Cloudflare Pages auto-deploy dari branch ni. URL: `https://thinkquran.inovasisaya.my/`
+*   **`develop`** = **Staging**. Admin auto-publish ke branch ni. Cloudflare akan auto-deploy preview URL untuk setiap push. TIDAK affect production sehingga di-merge ke main.
+
+### Auto-Publish Flow (Admin Panel)
+
+1.  Login ke `https://thinkquran.inovasisaya.my/admin.html` (gated by Cloudflare Access).
+2.  Setup PAT (one-time): klik ⚙️ → paste GitHub PAT dengan scope `repo` → Save → Test.
+3.  Tulis artikel → klik **Generate & Publish** → commit auto-ke `develop` branch.
+4.  Cloudflare auto-deploy preview URL (~30s). Boleh verify artikel di preview URL.
+5.  Bila dah confirm OK, merge `develop` → `main` untuk release ke production.
+
+### Release Process (Develop → Main)
+
+**Option A: Direct merge (recommended untuk solo dev)**
+```bash
+git checkout main
+git pull origin main
+git merge develop
+git push origin main
+# Cloudflare auto-deploy production
+```
+
+**Option B: Pull Request (safer, untuk review)**
+1.  Push ke develop (admin auto-publish dah handle).
+2.  Buka https://github.com/ariffinhamzah/nichesite/compare/main...develop
+3.  Klik **Create Pull Request** → review diff → **Merge Pull Request**.
+4.  Cloudflare auto-deploy production selepas merge.
+
+### Cloudflare Pages Settings
+
+*   **Production branch:** `main`
+*   **Build command:** `npm run build` (atau `None` jika guna prebuilt)
 *   **Output directory:** `/` (root)
-*   **Environment variables:** (optional) `SITE_DOMAIN`
+*   **Preview branches:** auto (semua branch lain akan dapat preview URL)
 
 `_headers` file akan auto-apply CSP, HSTS, X-Frame-Options, dll.
+
+### Cloudflare Web Analytics
+Beacon script auto-inject di semua page. CSP sudah allow `https://static.cloudflareinsights.com`.
