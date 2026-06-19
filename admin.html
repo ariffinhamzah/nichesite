@@ -465,9 +465,9 @@
             showPublishStatus('pending', 'Committing to GitHub (' + (originalSlug ? 'update' : 'new') + ')...');
             publishToGitHub(obj)
                 .then(function(commit) {
-                    btn.textContent = '\u2705 Published!';
+                    btn.textContent = '\u2705 Published to develop!';
                     btn.className = 'w-full bg-green-500 text-white font-extrabold py-3 rounded-lg shadow mb-4 text-sm';
-                    showPublishStatus('success', 'Commit ' + commit.sha.substring(0,7) + ': "' + commit.commit.message + '"\n\u2192 Cloudflare deploying in ~30s\n\u2192 Live at: ' + window.location.origin + '/baca.html?slug=' + obj.slug);
+                    showPublishStatus('success', 'Commit ' + commit.sha.substring(0,7) + ' on develop: "' + commit.commit.message + '"\n\u2192 Cloudflare preview deploying in ~30s\n\u2192 Untuk release: merge develop \u2192 main\n\u2192 Pending release: <a href="https://github.com/' + GITHUB_REPO + '/compare/main...develop" target="_blank" rel="noopener" class="underline">view diff on GitHub</a>');
                     originalSlug = obj.slug;
                     editMode = 'edit';
                     setModeBadge();
@@ -573,22 +573,25 @@
         el.classList.remove('hidden');
         if (type === 'success') {
             el.className = 'mt-4 p-3 rounded border border-green-700 bg-green-900/30 text-green-300 text-[10px] font-mono whitespace-pre-wrap';
+            text.innerHTML = msg;
         } else if (type === 'error') {
             el.className = 'mt-4 p-3 rounded border border-red-700 bg-red-900/30 text-red-300 text-[10px] font-mono whitespace-pre-wrap';
+            text.textContent = msg;
         } else if (type === 'pending') {
             el.className = 'mt-4 p-3 rounded border border-yellow-700 bg-yellow-900/30 text-yellow-300 text-[10px] font-mono whitespace-pre-wrap';
+            text.textContent = msg;
         } else {
             el.className = 'mt-4 p-3 rounded border border-slate-700 bg-slate-900 text-yellow-300 text-[10px] font-mono whitespace-pre-wrap';
+            text.textContent = msg;
         }
-        text.textContent = msg;
         if (type === 'success' || type === 'info') {
             clearTimeout(showPublishStatus._t);
-            showPublishStatus._t = setTimeout(() => el.classList.add('hidden'), 12000);
+            showPublishStatus._t = setTimeout(() => el.classList.add('hidden'), 15000);
         }
     }
 
     const GITHUB_REPO = 'ariffinhamzah/nichesite';
-    const GITHUB_BRANCH = 'main';
+    const GITHUB_BRANCH = 'develop';
     const GITHUB_API = 'https://api.github.com';
     const PAT_KEY = 'github_pat';
 
